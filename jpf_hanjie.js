@@ -58,6 +58,8 @@
 // Запуск функции init() при загрузке страницы
 window.onload = init;
 
+var puzzleCells;
+var cellBackground;
 
 function init() {
    // Вставить заголовок для первой головоломки
@@ -72,6 +74,12 @@ function init() {
    for (var i = 0; i < puzzleButtons.length; i++) {
       puzzleButtons[i].onclick = swapPuzzle;
    }
+
+   // Устанавливаем начальные стили таблицы
+   setupPuzzle();
+
+   // Добавить слушатель события mouseup
+   document.addEventListener("mouseup", endBackground);
 
 }
 
@@ -96,10 +104,71 @@ function swapPuzzle(e) {
          break;
    }
 
+   // Устанавливаем начальные стили таблицы
+   setupPuzzle();
 }
 
+function setupPuzzle() {
+   /* Находим все ячейки данных в головоломке */
+   puzzleCells = document.querySelectorAll("table#hanjieGrid td");
+
+   /* Устанавливаем начальный цвет всех ячеек в золотой */
+   for (var i = 0; i < puzzleCells.length; i++) {
+      puzzleCells[i].style.backgroundColor = "rgb(233, 207, 29)";
+
+      // Установить цвет фона ячейки при нажатии кнопки мыши
+      puzzleCells[i].onmousedown = setBackground;
+
+      // Использовать изображение карандаша в качестве курсора
+      puzzleCells[i].style.cursor = "url(jpf_pencil.png), pointer";
 
 
+   }
+}
+
+function setBackground(e) {
+   var cursorType;
+
+   // Изменение цвета фона в зависимости от нажатой клавиши
+   if (e.shiftKey) {
+      cellBackground = "rgb(233, 207, 29)";      // Shift — вернуть ячейке золотой цвет
+      cursorType = "url(jpf_eraser.png), cell";
+
+   } else if (e.altKey) {
+      cellBackground = "rgb(255, 255, 255)";     // Alt — обозначить пустую ячейку (белый)
+      cursorType = "url(jpf_cross.png), crosshair";
+
+   } else {
+      cellBackground = "rgb(101, 101, 101)";     // Без модификаторов — закрасить ячейку серым
+      cursorType = "url(jpf_pencil.png), pointer";
+
+   }
+
+   e.target.style.backgroundColor = cellBackground;
+
+   // Создать слушатель событий для каждой ячейки головоломки
+   for (var i = 0; i < puzzleCells.length; i++) {
+      puzzleCells[i].addEventListener("mouseenter", extendBackground);
+      puzzleCells[i].style.cursor = cursorType;
+   }
+
+   // Предотвратить стандартное действие браузера — выделение текста таблицы
+   e.preventDefault();
+}
+
+function extendBackground(e) {
+   e.target.style.backgroundColor = cellBackground;
+
+}
+
+function endBackground() {
+   // Удалить слушатель события mouseenter для всех ячеек
+   for (var i = 0; i < puzzleCells.length; i++) {
+      puzzleCells[i].removeEventListener("mouseenter", extendBackground);
+      puzzleCells[i].style.cursor = "url(jpf_pencil.png), pointer";
+
+   }
+}
 
 function drawPuzzle(hint, rating, puzzle) {
    
